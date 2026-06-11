@@ -1,96 +1,111 @@
-import { pgTable, uuid, text, timestamp, integer} from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, integer, boolean} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-import { createInsertSchema, CreateInsertSchema, createSelectSchema, CreateSelectSchema } from "drizzle-zod";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-
+//Tabla de usuarios (estudiantes y profesores)
 export const users = pgTable('users', {
     id: uuid('id').primaryKey().defaultRandom(),
     email: text('email').notNull().unique(),
-    username: text('username').notNull().unique(),
-    password: text('password').notNull().unique(),
-    first_name: text('first_name').notNull().unique(),
-    last_name: text('last_name').notNull(),
-    created_at: timestamp('created_at').defaultNow().notNull(),
-    updated_at: timestamp('updated_at').defaultNow().notNull()
-});
-
-
-
-export const vehicle_brands = pgTable('vehicle_brands', {
-    id: uuid('id').primaryKey().defaultRandom(),
+    password: text('password').notNull(),
     name: text('name').notNull(),
+    second_name: text('second_name'),
+    first_last_name: text('first_last_name').notNull(),
+    second_last_name: text('second_last_name'),
+    role: text('role').notNull(), // 'student' o 'teacher'
     created_at: timestamp('created_at').defaultNow().notNull(),
     updated_at: timestamp('updated_at').defaultNow().notNull()
 });
 
-export const vehicles_categories = pgTable('vehicles_categories', {
+//Tabla de cursos
+export const courses = pgTable('courses', {
     id: uuid('id').primaryKey().defaultRandom(),
+    code: text('code').notNull().unique(),
     name: text('name').notNull(),
-    created_at: timestamp('created_at').defaultNow().notNull(),
-    updated_at: timestamp('updated_at').defaultNow().notNull()
-});
-
-export const vehicles_fuel_types= pgTable('vehicles_fuel_type', {
-    id: uuid('id').primaryKey().defaultRandom(),
-    name: text('name').notNull(),
-    created_at: timestamp('created_at').defaultNow().notNull(),
-    updated_at: timestamp('updated_at').defaultNow().notNull()
-});
-
-export const vehicles = pgTable('vehicles', {
-    id: uuid('id').primaryKey().defaultRandom(),
-    brand_id: uuid('brand_id').notNull().references(() => vehicle_brands.id),
-    category_id: uuid('category_id').notNull().references(() => vehicles_categories.id),
-    fuel_type_id: uuid('fuel_type_id').notNull().references(() => vehicles_fuel_types.id),
-    model: text('model').notNull(),
-    year: integer('year').notNull(),
     description: text('description'),
+    teacher_id: uuid('teacher_id').notNull(),
     created_at: timestamp('created_at').defaultNow().notNull(),
     updated_at: timestamp('updated_at').defaultNow().notNull()
 });
 
-export const brandsRelations = relations(vehicle_brands, ({ many }) => ({
-vehicles: many(vehicles)
+//Tabla de disponibilidades de los profesores
+export const availabilities = pgTable('availabilities', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    course_id: uuid('course_id').notNull(),
+    day_of_week: integer('day_of_week').notNull(),
+    start_time: text('start_time').notNull(),
+    end_time: text('end_time').notNull(),
+    is_available: boolean('is_available').notNull(),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+    updated_at: timestamp('updated_at').defaultNow().notNull()
+});
+
+//Tabla de citas (appointments)
+export const appointments = pgTable('appointments', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    student_id: uuid('student_id').notNull(),
+    course_id: uuid('course_id').notNull(),
+    appointment_date: text('appointment_date').notNull(),
+    start_time: text('start_time').notNull(),
+    status: text('status').notNull(),
+    topic: text('topic').notNull(),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+    updated_at: timestamp('updated_at').defaultNow().notNull()
+});
+
+//Relaciones entre tablas
+
+// Un usuario (profesor) puede tener muchos cursos. Los estudiantes tienen muchas citas.
+export const userRelations = relations(users, ({ many }) => ({
+    courses: many(courses),
+    appointments: many(appointments)
 }));
 
-export const categoriesRelations = relations(vehicles_categories, ({ many }) => ({
-vehicles: many(vehicles)
+// Un curso pertenece a un profesor, tiene muchos horarios y muchas citas.
+export const courseRelations = relations(courses, ({ one, many }) => ({
+    teacher: one(users, {
+        fields: [courses.teacher_id],
+        references: [users.id]
+    }),
+    availabilities: many(availabilities),
+    appointments: many(appointments)
 }));
 
-export const fuelTypesRelations = relations(vehicles_fuel_types, ({ many }) => ({
-vehicles: many(vehicles)
+// Un horario pertenece a un curso específico.
+export const availabilityRelations = relations(availabilities, ({ one }) => ({
+    course: one(courses, {
+        fields: [availabilities.course_id],
+        references: [courses.id]
+    })
 }));
 
-export const vehiclesRelations = relations(vehicles, ({ one }) => ({
-brand: one(vehicle_brands, {
-fields: [vehicles.brand_id],
-references: [vehicle_brands.id]
-}),
-category: one(vehicles_categories, {
-fields: [vehicles.category_id],
-references: [vehicles_categories.id]
-}),
-fuel_type: one(vehicles_fuel_types, {
-fields: [vehicles.fuel_type_id],
-references: [vehicles_fuel_types.id]
-}),
+// Una cita pertenece a un estudiante y a un curso.
+export const appointmentRelations = relations(appointments, ({ one }) => ({
+    student: one(users, {
+        fields: [appointments.student_id],
+        references: [users.id]
+    }),
+    course: one(courses, {
+        fields: [appointments.course_id],
+        references: [courses.id]
+    })
 }));
 
+//Inferir en tipos de TypeScript a partir de los esquemas de Drizzle
+export type User = typeof users.$inferSelect;
+export type Course = typeof courses.$inferSelect;
+export type Availability = typeof availabilities.$inferSelect;
+export type Appointment = typeof appointments.$inferSelect;
 
+//Esquemas de validación con Zod
 export const insertUserSchema = createInsertSchema(users);
-export const insertBrandSchema = createInsertSchema(vehicle_brands);
-export const insertCategorySchema = createInsertSchema(vehicles_categories);
-export const insertFuelTypeSchema = createInsertSchema(vehicles_fuel_types);
-export const insertVehicleSchema = createInsertSchema(vehicles);
+export const insertCourseSchema = createInsertSchema(courses);
+export const insertAvailabilitySchema = createInsertSchema(availabilities);
+export const insertAppointmentSchema = createInsertSchema(appointments);
 
-export const SelectUserSchema = createSelectSchema(users);
-export const SelectBrandSchema = createSelectSchema(vehicle_brands);
-export const SelectCategorySchema = createSelectSchema(vehicles_categories);
-export const SelectFuelTypeSchema = createSelectSchema(vehicles_fuel_types);
-export const SelectVehicleSchema = createSelectSchema(vehicles);
-
-
-
+export const selectUserSchema = createSelectSchema(users);
+export const selectCourseSchema = createSelectSchema(courses);
+export const selectAvailabilitySchema = createSelectSchema(availabilities);
+export const selectAppointmentSchema = createSelectSchema(appointments);
 
 
