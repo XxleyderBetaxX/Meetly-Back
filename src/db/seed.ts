@@ -1,97 +1,241 @@
 
 import {db} from './connection';
-import {users, vehicle_brands, vehicles_categories, vehicles_fuel_types, vehicles} from './schema';
+import {users, courses, availabilities, appointments} from './schema';
 
 const seed = async () => {
-    // PROTECTION: Prevent seeding in production
-    const appStage = process.env.APP_STAGE;
-    
-    if (appStage === 'production') {
-        console.error('ERROR: Cannot run seed script in production environment!');
-        console.error('Current APP_STAGE:', appStage);
-        process.exit(1); // Exit with error code
-    }
 
-    // confirmation for staging/test environments
-    console.log(`Running seed in ${appStage} environment...`);
-    console.log('starting seed...');
+    try {
 
-    try{
-        console.log('deleting existing data...');
+        console.log('Deleting existing data...');
+
+        await db.delete(appointments).execute();
+        await db.delete(availabilities).execute();
+        await db.delete(courses).execute();
         await db.delete(users).execute();
-        await db.delete(vehicle_brands).execute();
-        await db.delete(vehicles_categories).execute();
-        await db.delete(vehicles_fuel_types).execute();
-        await db.delete(vehicles).execute();
-        console.log('inserting seed data...');
-        // Insert seed data
-        // Insert users (no ID needed)
-const insertedUsers = await db.insert(users).values([
-    { email: 'alice@example.com', username: 'alice_smith', password: 'password1', first_name: 'Alice', last_name: 'Smith' },
-    { email: 'bob@example.com', username: 'bob_johnson', password: 'password2', first_name: 'Bob', last_name: 'Johnson'}
-    ]).returning();
 
-    // Insert brands and capture IDs
-    const insertedBrands = await db.insert(vehicle_brands).values([
-        { name: 'Toyota' },
-        { name: 'Honda' }
-    ]).returning();
+        console.log('Inserting users...');
 
-    // Insert categories and capture IDs
-    const insertedCategories = await db.insert(vehicles_categories).values([
-        { name: 'Sedan' },
-        { name: 'SUV' }
-    ]).returning();
+        const insertedUsers = await db.insert(users).values([
 
-    // Insert fuel types and capture IDs
-    const insertedFuelTypes = await db.insert(vehicles_fuel_types).values([
-        { name: 'Gasoline' },
-        { name: 'Electric' }
-    ]).returning();
+            
+            {
+                email: 'jorge.miranda@ucr.ac.cr',
+                password: 'Interactivas',
+                name: 'Jorge',
+                second_name: 'Andrey',
+                first_last_name: 'Miranda',
+                second_last_name: 'Loria',
+                role: 'teacher'
+            },
+            {
+                email: 'finckingsalazar@ucr.ac.cr',
+                password: 'ComicSans',
+                name: 'Finckin',
+                second_name: 'Jesús',
+                first_last_name: 'Finckinzeller',
+                second_last_name: 'Sánchez',
+                role: 'teacher'
+            },  
+             {
+                email: 'roberto.escobar@ucr.ac.cr',
+                password: 'Bibaracho',
+                name: 'Roberto',
+                second_name: 'Gustavo',
+                first_last_name: 'Escobar',
+                second_last_name: 'Aguero',
+                role: 'teacher'
+            },
+            {
+                email: 'leydersinAbejin@ucr.ac.cr',
+                password: 'Femboys777',
+                name: 'Leyder',
+                second_name: 'Manuel',
+                first_last_name: 'Betancourt',
+                second_last_name: 'Hernandéz',
+                role: 'student'
+            },
+            {
+                email: 'kesitoUWU@ucr.ac.cr',
+                password: 'GojoRico',
+                name: 'Kesly',
+                second_name: 'Ariana',
+                first_last_name: 'Rojas',
+                second_last_name: 'Rodriguez',
+                role: 'student'
+            },
+            {
+                email: 'eglyBayonneta@ucr.ac.cr',
+                password: 'Lesbian',
+                name: 'Egly',
+                second_name: 'Jimena',
+                first_last_name: 'Meza',
+                second_last_name: 'Guitierrez',
+                role: 'student'
+            },
+            {
+                email: 'AlienUwU@ucr.ac.cr',
+                password: 'TojiRico',
+                name: 'Ailen',
+                second_name: 'Fabiana',
+                first_last_name: 'Lopez',
+                second_last_name: 'Arce',
+                role: 'student'
+            }
 
-    // Now insert vehicles using the captured IDs
-    await db.insert(vehicles).values([
-    { 
-        brand_id: insertedBrands[0].id,      // Toyota
-        category_id: insertedCategories[0].id, // Sedan
-        fuel_type_id: insertedFuelTypes[0].id,  // Gasoline
-        model: 'Camry', 
-        year: 2020, 
-        description: 'A reliable sedan' 
+        ]).returning();
+
+        const miranda = insertedUsers[0];
+const finckin = insertedUsers[1];
+const roberto = insertedUsers[2];
+
+console.log('Inserting courses...');
+
+const insertedCourses = await db.insert(courses).values([
+    {
+        code: 'C31133',
+        name: 'Desarrollo de Aplicaciones Interactivas 2',
+        description: 'Curso de desarrollo web moderno',
+        teacher_id: miranda.id
     },
-    { 
-        brand_id: insertedBrands[0].id,      // Toyota
-        category_id: insertedCategories[1].id, // SUV
-        fuel_type_id: insertedFuelTypes[0].id,  // Gasoline
-        model: 'RAV4', 
-        year: 2020, 
-        description: 'A spacious SUV' 
+    {
+        code: 'C41277',
+        name: 'Diseño de Sitios Web',
+        description: 'Diseño UX/UI',
+        teacher_id: finckin.id
     },
-    { 
-        brand_id: insertedBrands[1].id,      // Honda
-        category_id: insertedCategories[0].id, // Sedan
-        fuel_type_id: insertedFuelTypes[0].id,  // Gasoline
-        model: 'Civic', 
-        year: 2020, 
-        description: 'A compact car' 
+    {
+        code: 'C91218',
+        name: 'Ingeniería de Aplicaciones Interactivas',
+        description: 'Arquitectura de software',
+        teacher_id: roberto.id
     },
-    { 
-        brand_id: insertedBrands[1].id,      // Honda
-        category_id: insertedCategories[1].id, // SUV
-        fuel_type_id: insertedFuelTypes[0].id,  // Gasoline
-        model: 'CR-V', 
-        year: 2020, 
-        description: 'A versatile SUV' 
+    {
+        code: 'C50001',
+        name: 'Bases de Datos',
+        description: 'Modelo de SQL',
+        teacher_id: roberto.id
+    },
+    {
+        code: 'C50002',
+        name: 'Desarrollo de Aplicaciones Interactivas 3',
+        description: 'Desarrollo ',
+        teacher_id: miranda.id
     }
-    ]).returning();
+]).returning();
 
-    console.log('Seed completed successfully!');
-    
-}catch(error){
-        console.error('Error during seeding:', error);
-        process.exit(1); // Exit with error code
+console.log('Inserting availabilities...');
+
+await db.insert(availabilities).values([
+    {
+        course_id: insertedCourses[0].id,
+        day_of_week: 1,
+        start_time: '08:00',
+        end_time: '10:00',
+        is_available: true
+    },
+    {
+        course_id: insertedCourses[0].id,
+        day_of_week: 3,
+        start_time: '08:00',
+        end_time: '10:00',
+        is_available: true
+    },
+    {
+        course_id: insertedCourses[1].id,
+        day_of_week: 2,
+        start_time: '13:00',
+        end_time: '15:00',
+        is_available: true
+    },
+    {
+        course_id: insertedCourses[2].id,
+        day_of_week: 4,
+        start_time: '09:00',
+        end_time: '11:00',
+        is_available: true
+    },
+    {
+        course_id: insertedCourses[3].id,
+        day_of_week: 5,
+        start_time: '08:00',
+        end_time: '10:00',
+        is_available: true
+    },
+    {
+        course_id: insertedCourses[4].id,
+        day_of_week: 1,
+        start_time: '14:00',
+        end_time: '16:00',
+        is_available: true
     }
-}
+]);
+
+console.log('Inserting appointments...');
+
+await db.insert(appointments).values([
+    {
+        student_id: insertedUsers[3].id, // Leyder
+        course_id: insertedCourses[0].id,
+        appointment_date: '2026-06-20',
+        start_time: '08:00',
+        status: 'pending',
+        topic: 'Dudas sobre React'
+    },
+
+    {
+        student_id: insertedUsers[4].id, // Kesly
+        course_id: insertedCourses[0].id,
+        appointment_date: '2026-06-21',
+        start_time: '09:00',
+        status: 'confirmed',
+        topic: 'Proyecto final'
+    },
+
+    {
+        student_id: insertedUsers[5].id, // Egly
+        course_id: insertedCourses[1].id,
+        appointment_date: '2026-06-22',
+        start_time: '13:00',
+        status: 'pending',
+        topic: 'Patrones de diseño'
+    },
+    {
+        student_id: insertedUsers[6].id, // Ailen
+        course_id: insertedCourses[2].id,
+        appointment_date: '2026-06-23',
+        start_time: '10:00',
+        status: 'confirmed',
+        topic: 'Agentes de Playwright'
+     },
+    {
+        student_id: insertedUsers[6].id, // Ailen
+        course_id: insertedCourses[3].id,
+        appointment_date: '2026-06-24',
+        start_time: '08:00',
+        status: 'pending',
+        topic: 'Consultas SQL'
+    },
+    {
+        student_id: insertedUsers[3].id, // Leyder
+        course_id: insertedCourses[4].id,
+        appointment_date: '2026-06-7',
+        start_time: '14:00',
+        status: 'confirmed',
+        topic: 'Ayudame Dios'
+    }
+]);
+
+console.log('Seed completed successfully!');
+    } catch (error) {
+
+        console.error(error);
+        process.exit(1);
+
+    }
+
+};
+
+
 
 if(require.main === module){
     seed().then(() => {

@@ -17,13 +17,13 @@ export const users = pgTable('users', {
     updated_at: timestamp('updated_at').defaultNow().notNull()
 });
 
-//Tabla de cursos
+//Tabla de cursos      
 export const courses = pgTable('courses', {
     id: uuid('id').primaryKey().defaultRandom(),
     code: text('code').notNull().unique(),
     name: text('name').notNull(),
     description: text('description'),
-    teacher_id: uuid('teacher_id').notNull(),
+    teacher_id: uuid('teacher_id').notNull().references(() => users.id), // referencia al id de usuario
     created_at: timestamp('created_at').defaultNow().notNull(),
     updated_at: timestamp('updated_at').defaultNow().notNull()
 });
@@ -31,7 +31,7 @@ export const courses = pgTable('courses', {
 //Tabla de disponibilidades de los profesores
 export const availabilities = pgTable('availabilities', {
     id: uuid('id').primaryKey().defaultRandom(),
-    course_id: uuid('course_id').notNull(),
+    course_id: uuid('course_id').notNull().references(() => courses.id), // referencia al id de cursos
     day_of_week: integer('day_of_week').notNull(),
     start_time: text('start_time').notNull(),
     end_time: text('end_time').notNull(),
@@ -43,7 +43,7 @@ export const availabilities = pgTable('availabilities', {
 //Tabla de citas (appointments)
 export const appointments = pgTable('appointments', {
     id: uuid('id').primaryKey().defaultRandom(),
-    student_id: uuid('student_id').notNull(),
+    student_id: uuid('student_id').notNull().references(() => users.id),//referencia a user id
     course_id: uuid('course_id').notNull(),
     appointment_date: text('appointment_date').notNull(),
     start_time: text('start_time').notNull(),
