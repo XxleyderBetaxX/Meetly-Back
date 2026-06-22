@@ -84,7 +84,7 @@ const seed = async () => {
 
         ]).returning();
 
-        const miranda = insertedUsers[0];
+const miranda = insertedUsers[0];
 const finckin = insertedUsers[1];
 const roberto = insertedUsers[2];
 
