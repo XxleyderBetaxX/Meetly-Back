@@ -104,19 +104,19 @@ const seed = async () => {
     console.log('Inserting enrollments...');
     await db.insert(enrollments).values([
       // Leyder — 5 cursos
-     { student_id: leyder.id, course_id: c1.id },
+{ student_id: leyder.id, course_id: c1.id },
 { student_id: leyder.id, course_id: c2.id },
 { student_id: leyder.id, course_id: c3.id },
 { student_id: leyder.id, course_id: c4.id },
 { student_id: leyder.id, course_id: c5.id },
       // Kesly — 4 cursos
-     { student_id: kesly.id, course_id: c1.id },
+{ student_id: kesly.id, course_id: c1.id },
 { student_id: kesly.id, course_id: c2.id },
 { student_id: kesly.id, course_id: c3.id },
 { student_id: kesly.id, course_id: c5.id },
 
       // Egly — 3 cursos
-      { student_id: egly.id, course_id: c2.id },
+{ student_id: egly.id, course_id: c2.id },
 { student_id: egly.id, course_id: c4.id },
 { student_id: egly.id, course_id: c5.id },
 

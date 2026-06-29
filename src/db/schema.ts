@@ -61,6 +61,16 @@ export const appointments = pgTable('appointments', {
     updated_at: timestamp('updated_at').defaultNow().notNull()
 });
 
+// Tabla de mensajes del Chat
+export const messages = pgTable('messages', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    sender_id: uuid('sender_id').notNull().references(() => users.id),   // Quién envía el mensaje
+    receiver_id: uuid('receiver_id').notNull().references(() => users.id), // Quién recibe el mensaje
+    content: text('content').notNull(),                                   // El texto del mensaje
+    is_read: boolean('is_read').default(false).notNull(),                 // Para saber si ya lo vieron
+    created_at: timestamp('created_at').defaultNow().notNull()
+});
+
 //Relaciones entre tablas
 
 // Un usuario (profesor) puede tener muchos cursos. Los estudiantes tienen muchas citas.
@@ -96,12 +106,19 @@ export const appointmentRelations = relations(appointments, ({ one }) => ({
   course:  one(courses, { fields: [appointments.course_id],  references: [courses.id] }),
 }));
 
+// Un mensaje pertenece a un emisor y a un receptor específico
+export const messageRelations = relations(messages, ({ one }) => ({
+  sender:   one(users, { fields: [messages.sender_id],   references: [users.id] }),
+  receiver: one(users, { fields: [messages.receiver_id], references: [users.id] }),
+}));
+
 //Inferir en tipos de TypeScript a partir de los esquemas de Drizzle
 export type User = typeof users.$inferSelect;
 export type Course = typeof courses.$inferSelect;
 export type Enrollment   = typeof enrollments.$inferSelect;
 export type Availability = typeof availabilities.$inferSelect;
 export type Appointment = typeof appointments.$inferSelect;
+export type Message = typeof messages.$inferSelect;
 
 //Esquemas de validación con Zod
 export const insertUserSchema = createInsertSchema(users);
@@ -109,11 +126,11 @@ export const insertCourseSchema = createInsertSchema(courses);
 export const insertEnrollmentSchema   = createInsertSchema(enrollments);
 export const insertAvailabilitySchema = createInsertSchema(availabilities);
 export const insertAppointmentSchema = createInsertSchema(appointments);
+export const insertMessageSchema = createInsertSchema(messages);
 
 export const selectUserSchema = createSelectSchema(users);
 export const selectCourseSchema = createSelectSchema(courses);
 export const selectEnrollmentSchema   = createSelectSchema(enrollments);    
 export const selectAvailabilitySchema = createSelectSchema(availabilities);
 export const selectAppointmentSchema = createSelectSchema(appointments);
-
-
+export const selectMessageSchema = createSelectSchema(messages);
