@@ -1,4 +1,3 @@
-
 import { db } from './connection';
 import { users, courses, enrollments, availabilities, appointments } from './schema';
 import { hashPassword } from '../utils/passwords';
@@ -121,10 +120,10 @@ const seed = async () => {
 { student_id: egly.id, course_id: c5.id },
 
       // Ailen — 4 cursos
-      { student_id: ailen.id, course_id: c2.id },
-      { student_id: ailen.id, course_id: c3.id },
-      { student_id: ailen.id, course_id: c4.id },
-      { student_id: ailen.id, course_id: c5.id },
+{ student_id: ailen.id, course_id: c2.id },
+{ student_id: ailen.id, course_id: c3.id },
+{ student_id: ailen.id, course_id: c4.id },
+{ student_id: ailen.id, course_id: c5.id },
     ]);
 
     console.log('Inserting availabilities...');

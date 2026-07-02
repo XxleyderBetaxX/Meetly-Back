@@ -1,6 +1,5 @@
-import { pgTable, uuid, text, timestamp, integer, boolean} from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, integer, boolean, serial}  from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 //Tabla de usuarios (estudiantes y profesores)
@@ -12,6 +11,7 @@ export const users = pgTable('users', {
     second_name: text('second_name'),
     first_last_name: text('first_last_name').notNull(),
     second_last_name: text('second_last_name'),
+    avatar_url: text('avatar_url'),
     role: text('role').notNull(), // 'student' o 'teacher'
     created_at: timestamp('created_at').defaultNow().notNull(),
     updated_at: timestamp('updated_at').defaultNow().notNull()
@@ -71,6 +71,15 @@ export const messages = pgTable('messages', {
     created_at: timestamp('created_at').defaultNow().notNull()
 });
 
+
+// Tabla de tickets de soporte
+export const supportTickets = pgTable('support_tickets', {
+  id: serial('id').primaryKey(),
+  subject: text('subject').notNull(),
+  description: text('description').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 //Relaciones entre tablas
 
 // Un usuario (profesor) puede tener muchos cursos. Los estudiantes tienen muchas citas.
@@ -100,7 +109,6 @@ export const enrollmentRelations = relations(enrollments, ({ one }) => ({
 }));
 
 // Una cita pertenece a un estudiante y a un curso.
-
 export const appointmentRelations = relations(appointments, ({ one }) => ({
   student: one(users,   { fields: [appointments.student_id], references: [users.id] }),
   course:  one(courses, { fields: [appointments.course_id],  references: [courses.id] }),
@@ -119,6 +127,8 @@ export type Enrollment   = typeof enrollments.$inferSelect;
 export type Availability = typeof availabilities.$inferSelect;
 export type Appointment = typeof appointments.$inferSelect;
 export type Message = typeof messages.$inferSelect;
+export type SupportTicket = typeof supportTickets.$inferSelect;
+
 
 //Esquemas de validación con Zod
 export const insertUserSchema = createInsertSchema(users);
@@ -127,6 +137,7 @@ export const insertEnrollmentSchema   = createInsertSchema(enrollments);
 export const insertAvailabilitySchema = createInsertSchema(availabilities);
 export const insertAppointmentSchema = createInsertSchema(appointments);
 export const insertMessageSchema = createInsertSchema(messages);
+export const insertSupportTicketSchema = createInsertSchema(supportTickets);
 
 export const selectUserSchema = createSelectSchema(users);
 export const selectCourseSchema = createSelectSchema(courses);
@@ -134,3 +145,4 @@ export const selectEnrollmentSchema   = createSelectSchema(enrollments);
 export const selectAvailabilitySchema = createSelectSchema(availabilities);
 export const selectAppointmentSchema = createSelectSchema(appointments);
 export const selectMessageSchema = createSelectSchema(messages);
+export const selectSupportTicketSchema = createSelectSchema(supportTickets);
