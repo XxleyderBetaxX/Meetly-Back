@@ -1,15 +1,17 @@
 import { db } from './connection';
-import { users, courses, enrollments, availabilities, appointments } from './schema';
+import { users, courses, enrollments, availabilities, appointments, messages } from './schema';
 import { hashPassword } from '../utils/passwords';
 
 const seed = async () => {
   try {
     console.log('Deleting existing data...');
+    await db.delete(messages).execute();
     await db.delete(appointments).execute();
     await db.delete(availabilities).execute();
     await db.delete(enrollments).execute();
     await db.delete(courses).execute();
     await db.delete(users).execute();
+    
 
     console.log('Inserting users...');
     const insertedUsers = await db.insert(users).values([
@@ -126,17 +128,52 @@ const seed = async () => {
 { student_id: ailen.id, course_id: c5.id },
     ]);
 
-    console.log('Inserting availabilities...');
-    await db.insert(availabilities).values([
-      { course_id: c1.id, day_of_week: 1, start_time: '08:00', end_time: '10:00', is_available: true },
-      { course_id: c1.id, day_of_week: 3, start_time: '08:00', end_time: '10:00', is_available: true },
-      { course_id: c2.id, day_of_week: 2, start_time: '13:00', end_time: '15:00', is_available: true },
-      { course_id: c2.id, day_of_week: 4, start_time: '13:00', end_time: '15:00', is_available: true },
-      { course_id: c3.id, day_of_week: 4, start_time: '09:00', end_time: '11:00', is_available: true },
-      { course_id: c4.id, day_of_week: 5, start_time: '08:00', end_time: '10:00', is_available: true },
-      { course_id: c5.id, day_of_week: 1, start_time: '14:00', end_time: '16:00', is_available: true },
-      { course_id: c5.id, day_of_week: 3, start_time: '14:00', end_time: '16:00', is_available: true },
-    ]);
+   console.log('Inserting availabilities...');
+await db.insert(availabilities).values([
+
+  // C1 — Lunes y Miércoles, mañana
+  { course_id: c1.id, day_of_week: 1, start_time: '08:00', end_time: '08:30', is_available: true },
+  { course_id: c1.id, day_of_week: 1, start_time: '08:30', end_time: '09:00', is_available: true },
+  { course_id: c1.id, day_of_week: 1, start_time: '09:00', end_time: '09:30', is_available: true },
+  { course_id: c1.id, day_of_week: 1, start_time: '09:30', end_time: '10:00', is_available: true },
+  { course_id: c1.id, day_of_week: 3, start_time: '08:00', end_time: '08:30', is_available: true },
+  { course_id: c1.id, day_of_week: 3, start_time: '08:30', end_time: '09:00', is_available: true },
+  { course_id: c1.id, day_of_week: 3, start_time: '09:00', end_time: '09:30', is_available: true },
+  { course_id: c1.id, day_of_week: 3, start_time: '09:30', end_time: '10:00', is_available: true },
+
+  // C2 — Martes y Jueves, tarde
+  { course_id: c2.id, day_of_week: 2, start_time: '13:00', end_time: '13:30', is_available: true },
+  { course_id: c2.id, day_of_week: 2, start_time: '13:30', end_time: '14:00', is_available: true },
+  { course_id: c2.id, day_of_week: 2, start_time: '14:00', end_time: '14:30', is_available: true },
+  { course_id: c2.id, day_of_week: 2, start_time: '14:30', end_time: '15:00', is_available: true },
+  { course_id: c2.id, day_of_week: 4, start_time: '13:00', end_time: '13:30', is_available: true },
+  { course_id: c2.id, day_of_week: 4, start_time: '13:30', end_time: '14:00', is_available: true },
+  { course_id: c2.id, day_of_week: 4, start_time: '14:00', end_time: '14:30', is_available: true },
+  { course_id: c2.id, day_of_week: 4, start_time: '14:30', end_time: '15:00', is_available: true },
+
+  // C3 — Jueves, mañana y tarde
+  { course_id: c3.id, day_of_week: 4, start_time: '09:00', end_time: '09:30', is_available: true },
+  { course_id: c3.id, day_of_week: 4, start_time: '09:30', end_time: '10:00', is_available: true },
+  { course_id: c3.id, day_of_week: 4, start_time: '10:00', end_time: '10:30', is_available: true },
+  { course_id: c3.id, day_of_week: 4, start_time: '14:00', end_time: '14:30', is_available: true },
+  { course_id: c3.id, day_of_week: 4, start_time: '14:30', end_time: '15:00', is_available: true },
+
+  // C4 — Viernes, mañana
+  { course_id: c4.id, day_of_week: 5, start_time: '08:00', end_time: '08:30', is_available: true },
+  { course_id: c4.id, day_of_week: 5, start_time: '08:30', end_time: '09:00', is_available: true },
+  { course_id: c4.id, day_of_week: 5, start_time: '09:00', end_time: '09:30', is_available: true },
+  { course_id: c4.id, day_of_week: 5, start_time: '09:30', end_time: '10:00', is_available: true },
+
+  // C5 — Lunes y Miércoles, tarde
+  { course_id: c5.id, day_of_week: 1, start_time: '14:00', end_time: '14:30', is_available: true },
+  { course_id: c5.id, day_of_week: 1, start_time: '14:30', end_time: '15:00', is_available: true },
+  { course_id: c5.id, day_of_week: 1, start_time: '15:00', end_time: '15:30', is_available: true },
+  { course_id: c5.id, day_of_week: 1, start_time: '15:30', end_time: '16:00', is_available: true },
+  { course_id: c5.id, day_of_week: 3, start_time: '14:00', end_time: '14:30', is_available: true },
+  { course_id: c5.id, day_of_week: 3, start_time: '14:30', end_time: '15:00', is_available: true },
+  { course_id: c5.id, day_of_week: 3, start_time: '15:00', end_time: '15:30', is_available: true },
+  { course_id: c5.id, day_of_week: 3, start_time: '15:30', end_time: '16:00', is_available: true },
+]);
 
     console.log('Inserting appointments...');
     await db.insert(appointments).values([
