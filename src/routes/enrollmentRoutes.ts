@@ -11,16 +11,15 @@ router.get("/:studentId", async (req, res) => {
     const { studentId } = req.params;
 
     const studentEnrollments = await db
-      .select({
-  enrollmentId: enrollments.id,
-  courseId: courses.id,
-  code: courses.code,
-  name: courses.name,
-  description: courses.description,
-  teacher_id: courses.teacher_id,
-  created_at: courses.created_at,
-  updated_at: courses.updated_at,
-})
+    .select({
+    id: courses.id,         
+    code: courses.code,
+    name: courses.name,
+    description: courses.description,
+    teacher_id: courses.teacher_id,
+    created_at: courses.created_at,
+    updated_at: courses.updated_at,
+  })
       .from(enrollments)
       .innerJoin(courses, eq(enrollments.course_id, courses.id))
       .where(eq(enrollments.student_id, studentId));

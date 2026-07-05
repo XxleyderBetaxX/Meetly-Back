@@ -95,6 +95,26 @@ export const createAppointment = async (req: Request, res: Response) => {
       });
     }
 
+    // Evitar que el mismo estudiante agende más de una cita el mismo día
+    // (en cualquier curso), para no saturar su agenda personal.
+    const studentSameDay = await db.select().from(appointments)
+      .where(
+        and(
+          eq(appointments.student_id, studentId),
+          eq(appointments.appointment_date, appointmentDate),
+          ne(appointments.status, "cancelled")
+        )
+      );
+
+    if (studentSameDay.length > 0) {
+      return res.status(409).json({
+        error: "Conflict",
+        message: "Ya tienes una cita agendada para ese día. Cancélala o elige otro día."
+      });
+    }
+
+    // Validación existente: que ese horario específico (curso + fecha + hora)
+    // no esté ya tomado por otro estudiante.
     const existing = await db.select().from(appointments)
       .where(
         and(
