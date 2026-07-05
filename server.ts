@@ -9,6 +9,7 @@ import enrollmentRoutes from './src/routes/enrollmentRoutes';
 import chatRoutes from './src/routes/chatRoutes';
 import supportRoutes from './src/routes/supportRoutes';
 import userRoutes from './src/routes/userRoutes';
+import notificationRoutes from './src/routes/notificationRoutes';
 
 
 //use routes
@@ -19,6 +20,7 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/support', supportRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 
 app.use((req, res) => {

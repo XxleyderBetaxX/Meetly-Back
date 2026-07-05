@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { db } from "../db/connection"; 
-import { messages, users, courses, enrollments } from "../db/schema"; 
+import { messages, users, courses, enrollments, notifications } from "../db/schema"; 
 import { and, or, eq, asc, count } from "drizzle-orm"; 
 
 // 1. ENVIAR UN MENSAJE (POST)
@@ -17,8 +17,22 @@ export const sendMessage = async (req: Request, res: Response) => {
       sender_id,
       receiver_id,
       content,
-      is_read: false // Por defecto entra como no leído
+      is_read: false 
     }).returning();
+
+    // 🚀 SOLUCIÓN AL UNDEFINED: Buscamos el nombre real directo en la tabla 'users' con el sender_id
+    const [senderDbData] = await db.select({ name: users.name })
+      .from(users)
+      .where(eq(users.id, sender_id));
+
+    const nombreReal = senderDbData?.name || "Un usuario";
+
+    // Creamos la notificación con el nombre real verificado de la base de datos
+    await db.insert(notifications).values({
+      user_id: receiver_id, 
+      content: `Tienes un nuevo mensaje de ${nombreReal}: "${content.substring(0, 30)}..."`,
+      is_read: false
+    });
 
     return res.status(201).json(newMessage);
   } catch (error) {

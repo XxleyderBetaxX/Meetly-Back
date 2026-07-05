@@ -80,6 +80,15 @@ export const supportTickets = pgTable('support_tickets', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+//Tabla de notificaciones
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  user_id: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }), 
+  content: text("content").notNull(),
+  is_read: boolean("is_read").default(false).notNull(), 
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});
+
 //Relaciones entre tablas
 
 // Un usuario (profesor) puede tener muchos cursos. Los estudiantes tienen muchas citas.
@@ -87,6 +96,9 @@ export const userRelations = relations(users, ({ many }) => ({
   courses:      many(courses),
   enrollments:  many(enrollments),
   appointments: many(appointments),
+  sentMessages: many(messages),
+  receivedMessages: many(messages),
+  notifications: many(notifications)
 }));
 
 // Un curso pertenece a un profesor, tiene muchos horarios y muchas citas.
@@ -96,6 +108,7 @@ export const courseRelations = relations(courses, ({ one, many }) => ({
   availabilities: many(availabilities),
   appointments:   many(appointments),
 }));
+
 
 // Un horario pertenece a un curso específico.
 export const availabilityRelations = relations(availabilities, ({ one }) => ({
@@ -120,6 +133,14 @@ export const messageRelations = relations(messages, ({ one }) => ({
   receiver: one(users, { fields: [messages.receiver_id], references: [users.id] }),
 }));
 
+//Una notificación pertenece a un usuario específico
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.user_id], 
+    references: [users.id],
+  }),
+}));
+
 //Inferir en tipos de TypeScript a partir de los esquemas de Drizzle
 export type User = typeof users.$inferSelect;
 export type Course = typeof courses.$inferSelect;
@@ -128,6 +149,7 @@ export type Availability = typeof availabilities.$inferSelect;
 export type Appointment = typeof appointments.$inferSelect;
 export type Message = typeof messages.$inferSelect;
 export type SupportTicket = typeof supportTickets.$inferSelect;
+export type Notification = typeof notifications.$inferSelect; 
 
 
 //Esquemas de validación con Zod
@@ -138,6 +160,7 @@ export const insertAvailabilitySchema = createInsertSchema(availabilities);
 export const insertAppointmentSchema = createInsertSchema(appointments);
 export const insertMessageSchema = createInsertSchema(messages);
 export const insertSupportTicketSchema = createInsertSchema(supportTickets);
+export const insertNotificationSchema = createInsertSchema(notifications);
 
 export const selectUserSchema = createSelectSchema(users);
 export const selectCourseSchema = createSelectSchema(courses);
@@ -146,3 +169,4 @@ export const selectAvailabilitySchema = createSelectSchema(availabilities);
 export const selectAppointmentSchema = createSelectSchema(appointments);
 export const selectMessageSchema = createSelectSchema(messages);
 export const selectSupportTicketSchema = createSelectSchema(supportTickets);
+export const selectNotificationSchema = createSelectSchema(notifications);

@@ -1,9 +1,9 @@
 import type { Request, Response } from "express";
 import { db } from "../db/connection";
-import { appointments, courses, users } from "../db/schema";
+import { appointments, courses, users, notifications } from "../db/schema";
 import { eq, and, ne } from "drizzle-orm";
 
-// GET /api/appointments/teacher/:teacherId
+// 1. OBTENER CITAS DEL PROFESOR (Sin cambios)
 export const getTeacherAppointments = async (req: Request, res: Response) => {
   try {
     const teacherId = req.params.teacherId as string;
@@ -33,7 +33,6 @@ export const getTeacherAppointments = async (req: Request, res: Response) => {
       message: "Teacher appointments retrieved successfully.",
       data: teacherAppointments
     });
-
   } catch (error) {
     console.error("Get teacher appointments error:", error);
     return res.status(500).json({
@@ -43,7 +42,7 @@ export const getTeacherAppointments = async (req: Request, res: Response) => {
   }
 };
 
-// GET /api/appointments/:studentId
+// 2. OBTENER CITAS DEL ESTUDIANTE (Sin cambios)
 export const getStudentAppointments = async (req: Request, res: Response) => {
   try {
     const studentId = req.params.studentId as string;
@@ -73,7 +72,6 @@ export const getStudentAppointments = async (req: Request, res: Response) => {
       message: "Appointments retrieved successfully.",
       data: studentAppointments
     });
-
   } catch (error) {
     console.error("Get appointments error:", error);
     return res.status(500).json({
@@ -83,7 +81,7 @@ export const getStudentAppointments = async (req: Request, res: Response) => {
   }
 };
 
-// POST /api/appointments
+// 3. CREAR CITA (Notifica al Profesor de la nueva solicitud)
 export const createAppointment = async (req: Request, res: Response) => {
   try {
     const { studentId, courseId, appointmentDate, startTime, topic } = req.body;
@@ -141,6 +139,20 @@ export const createAppointment = async (req: Request, res: Response) => {
       status:           "pending"
     }).returning();
 
+    // 🚀 NOTIFICACIÓN: Buscamos quién es el profesor del curso para enviarle la alerta
+    const [courseData] = await db.select({ teacher_id: courses.teacher_id, name: courses.name })
+      .from(courses)
+      .where(eq(courses.id, courseId));
+
+    if (courseData) {
+      const studentName = (req as any).user?.name || "Un estudiante";
+      await db.insert(notifications).values({
+        user_id: courseData.teacher_id, // Le llega al profesor
+        content: `${studentName} ha solicitado una cita para el curso ${courseData.name} el ${appointmentDate} a las ${startTime}.`,
+        is_read: false
+      });
+    }
+
     return res.status(201).json({
       message: "Appointment booked successfully.",
       data: newAppointment[0]
@@ -155,27 +167,55 @@ export const createAppointment = async (req: Request, res: Response) => {
   }
 };
 
-// PATCH /api/appointments/:id
+// 4. ACTUALIZAR CITA (Notifica al Estudiante si fue aceptada, rechazada o cancelada)
+// PATCH /api/appointments/:id (En tu backend)
 export const updateAppointment = async (req: Request, res: Response) => {
   try {
-   const id = req.params.id as string;
-    const { status } = req.body;
+    const id = req.params.id as string;
+    const { status } = req.body; // El Front manda 'confirmed' o 'cancelled'
+
+    console.log("--- DEBUG CITA ACTUALIZADO ---", { id, status });
 
     const updated = await db.update(appointments)
       .set({ status, updated_at: new Date() })
       .where(eq(appointments.id, id))
       .returning();
 
+    const appointment = updated[0];
+
+    if (appointment) {
+      // Traemos el nombre del curso para darle contexto al alumno
+      const [courseData] = await db.select({ name: courses.name })
+        .from(courses)
+        .where(eq(courses.id, appointment.course_id));
+
+      // 🚀 Mapeo exacto según tus dos botones del Front
+      let estadoTexto = "actualizada";
+      
+      if (status === "confirmed") {
+        estadoTexto = "ACEPTADA";
+      } else if (status === "cancelled") {
+        estadoTexto = "RECHAZADA";
+      }
+
+      // Insertamos la notificación oficial
+      await db.insert(notifications).values({
+        user_id: appointment.student_id, // Le llega al estudiante
+        content: `Tu cita del ${appointment.appointment_date} para el curso ${courseData?.name || ""} ha sido ${estadoTexto}.`,
+        is_read: false
+      });
+    }
+
     return res.status(200).json({
-      message: "Appointment updated.",
-      data: updated[0]
+      message: "Appointment updated successfully.",
+      data: appointment
     });
 
   } catch (error) {
     console.error("Update appointment error:", error);
-    return res.status(500).json({
-      error: "Internal Server Error",
-      message: "There was a problem updating the appointment."
+    return res.status(500).json({ 
+      error: "Internal Server Error", 
+      message: "There was a problem updating the appointment." 
     });
   }
 };
