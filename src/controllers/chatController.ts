@@ -6,6 +6,7 @@ import { and, or, eq, asc, count } from "drizzle-orm";
 // 1. ENVIAR UN MENSAJE (POST)
 export const sendMessage = async (req: Request, res: Response) => {
   try {
+    // 🔑 Extraemos el ID del usuario autenticado que viene del middleware
     const sender_id = (req as any).user.id; 
     const { receiver_id, content } = req.body;
 
@@ -13,6 +14,7 @@ export const sendMessage = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Faltan datos obligatorios" });
     }
 
+    // 1. Insertamos el mensaje en la base de datos
     const [newMessage] = await db.insert(messages).values({
       sender_id,
       receiver_id,
@@ -20,23 +22,24 @@ export const sendMessage = async (req: Request, res: Response) => {
       is_read: false 
     }).returning();
 
-    // 🚀 SOLUCIÓN AL UNDEFINED: Buscamos el nombre real directo en la tabla 'users' con el sender_id
+    // Buscamos el nombre real directo en la tabla 'users'
     const [senderDbData] = await db.select({ name: users.name })
       .from(users)
       .where(eq(users.id, sender_id));
 
+    // Si por alguna razón extraña no tiene nombre, cae en un respaldo amigable
     const nombreReal = senderDbData?.name || "Un usuario";
 
-    // Creamos la notificación con el nombre real verificado de la base de datos
+    // 2. Creamos la notificación con el nombre real verificado
     await db.insert(notifications).values({
-      user_id: receiver_id, 
+      user_id: receiver_id, // Le llega al que recibe el mensaje
       content: `Tienes un nuevo mensaje de ${nombreReal}: "${content.substring(0, 30)}..."`,
       is_read: false
     });
 
     return res.status(201).json(newMessage);
   } catch (error) {
-    console.error(error);
+    console.error("Error en sendMessage:", error);
     return res.status(500).json({ message: "Error al enviar el mensaje" });
   }
 };
