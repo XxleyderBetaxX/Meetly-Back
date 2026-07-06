@@ -11,7 +11,6 @@ export const createSupportTicket = async (req: Request, res: Response): Promise<
       res.status(400).json({ message: "El asunto y la descripción son requeridos." });
       return;
     }
-
     // Insertar en la base de datos
     const [newTicket] = await db.insert(supportTickets).values({ // Insertar los valores en la tabla de tickets de soporte
       subject,

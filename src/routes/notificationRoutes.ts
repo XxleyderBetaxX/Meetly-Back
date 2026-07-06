@@ -4,10 +4,10 @@ import { authenticateToken } from "../middleware/auth";
 
 const router = Router();
 
-// Endpoint para jalar la lista: GET http://localhost:3000/api/notifications
+// Endpoint para jalar la lista
 router.get("/", authenticateToken as any, getNotifications as any);
 
-// Endpoint para el check: PUT http://localhost:3000/api/notifications/mark-read
+// Endpoint para el check
 router.put("/mark-read", authenticateToken as any, markAllAsRead as any);
 
 export default router;

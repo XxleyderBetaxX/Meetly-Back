@@ -139,7 +139,7 @@ export const createAppointment = async (req: Request, res: Response) => {
       status:           "pending"
     }).returning();
 
-    // 🚀 NOTIFICACIÓN: Buscamos quién es el profesor del curso para enviarle la alerta
+    // Buscamos quién es el profesor del curso para enviarle la alerta
     const [courseData] = await db.select({ teacher_id: courses.teacher_id, name: courses.name })
       .from(courses)
       .where(eq(courses.id, courseId));
@@ -168,13 +168,10 @@ export const createAppointment = async (req: Request, res: Response) => {
 };
 
 // 4. ACTUALIZAR CITA (Notifica al Estudiante si fue aceptada, rechazada o cancelada)
-// PATCH /api/appointments/:id (En tu backend)
 export const updateAppointment = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
     const { status } = req.body; // El Front manda 'confirmed' o 'cancelled'
-
-    console.log("--- DEBUG CITA ACTUALIZADO ---", { id, status });
 
     const updated = await db.update(appointments)
       .set({ status, updated_at: new Date() })
@@ -188,8 +185,7 @@ export const updateAppointment = async (req: Request, res: Response) => {
       const [courseData] = await db.select({ name: courses.name })
         .from(courses)
         .where(eq(courses.id, appointment.course_id));
-
-      // 🚀 Mapeo exacto según tus dos botones del Front
+        
       let estadoTexto = "actualizada";
       
       if (status === "confirmed") {

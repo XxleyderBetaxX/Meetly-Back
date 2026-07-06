@@ -10,8 +10,8 @@ const router = Router();
 
 
 router.get("/teacher/:teacherId", getTeacherAppointments);
-router.get("/:studentId",         getStudentAppointments);
-router.post("/",                  createAppointment);
-router.patch("/:id",              updateAppointment);
+router.get("/:studentId", getStudentAppointments);
+router.post("/", createAppointment);
+router.patch("/:id", updateAppointment);
 
 export default router;

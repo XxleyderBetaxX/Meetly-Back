@@ -6,7 +6,7 @@ import { and, or, eq, asc, count } from "drizzle-orm";
 // 1. ENVIAR UN MENSAJE (POST)
 export const sendMessage = async (req: Request, res: Response) => {
   try {
-    // 🔑 Extraemos el ID del usuario autenticado que viene del middleware
+    //Extraemos el ID del usuario autenticado que viene del middleware
     const sender_id = (req as any).user.id; 
     const { receiver_id, content } = req.body;
 
