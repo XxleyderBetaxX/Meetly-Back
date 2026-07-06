@@ -30,6 +30,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
       first_last_name: user.first_last_name,
       second_last_name: user.second_last_name,
       avatar_url: user.avatar_url,
+      description: user.description,
       role: user.role,
     });
 // Mensaje de error en caso de que ocurra un problema al obtener el perfil
@@ -44,7 +45,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
   try {
     // Obtenemos el ID del usuario desde el token JWT
     const userId = (req as any).user?.id;
-    const { name, second_name, first_last_name, second_last_name, avatar_url } = req.body;
+    const { name, second_name, first_last_name, second_last_name, avatar_url, description } = req.body;
 // Verificamos si el ID del usuario está presente
     if (!userId) {
       return res.status(401).json({ message: 'No autorizado' });
@@ -58,6 +59,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
         first_last_name,
         second_last_name,
         avatar_url,
+        description,
         updated_at: new Date(),
       })
       .where(eq(users.id, userId))
@@ -72,6 +74,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
         first_last_name: updatedUser.first_last_name,
         second_last_name: updatedUser.second_last_name,
         avatar_url: updatedUser.avatar_url,
+        description: updatedUser.description,
       },
     });
 // Mensaje de error en caso de que ocurra un problema al actualizar el perfil

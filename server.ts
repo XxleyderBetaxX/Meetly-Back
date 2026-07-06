@@ -14,7 +14,7 @@ import userRoutes from './src/routes/userRoutes';
 //use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
-app.use('/api/profile', userRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/chat', chatRoutes);
