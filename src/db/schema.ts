@@ -12,6 +12,7 @@ export const users = pgTable('users', {
     first_last_name: text('first_last_name').notNull(),
     second_last_name: text('second_last_name'),
     avatar_url: text('avatar_url'),
+    description: text('description'),
     role: text('role').notNull(), // 'student' o 'teacher'
     created_at: timestamp('created_at').defaultNow().notNull(),
     updated_at: timestamp('updated_at').defaultNow().notNull()
@@ -145,4 +146,4 @@ export const selectEnrollmentSchema   = createSelectSchema(enrollments);
 export const selectAvailabilitySchema = createSelectSchema(availabilities);
 export const selectAppointmentSchema = createSelectSchema(appointments);
 export const selectMessageSchema = createSelectSchema(messages);
-export const selectSupportTicketSchema = createSelectSchema(supportTickets);
+export const selectSupportTicketSchema = createSelectSchema(supportTickets);  
