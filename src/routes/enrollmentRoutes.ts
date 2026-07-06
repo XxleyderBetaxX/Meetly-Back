@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "../db/connection";
-import { enrollments, courses } from "../db/schema";
+import { enrollments, courses, users } from "../db/schema";
 import { eq } from "drizzle-orm";
 
 const router = Router();
@@ -10,23 +10,25 @@ router.get("/:studentId", async (req, res) => {
   try {
     const { studentId } = req.params;
 
-    const studentEnrollments = await db
-    .select({
-    id: courses.id,         
-    code: courses.code,
-    name: courses.name,
-    description: courses.description,
-    teacher_id: courses.teacher_id,
-    created_at: courses.created_at,
-    updated_at: courses.updated_at,
-  })
+    // Realiza el cruce completo: Matrícula -> Curso -> Profesor (Usuario)
+    const studentCourses = await db
+      .select({
+        id: courses.id,
+        code: courses.code,
+        name: courses.name,
+        description: courses.description,
+        teacher_id: courses.teacher_id,
+        teacher_name: users.name,    
+        teacher_email: users.email,  
+      })
       .from(enrollments)
       .innerJoin(courses, eq(enrollments.course_id, courses.id))
+      .leftJoin(users, eq(courses.teacher_id, users.id))
       .where(eq(enrollments.student_id, studentId));
 
     return res.status(200).json({
       message: "Enrollments retrieved successfully.",
-      data: studentEnrollments,
+      data: studentCourses,
     });
 
   } catch (error) {
